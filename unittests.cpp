@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <string.h>
 
+static std::mutex  mtx;
+
 void someTests(){
     uint8_t myData[100], x[10];
     for (int i = 0; i < 100; i++)  myData[i] = i;
@@ -22,7 +24,7 @@ void someTests(){
     ringbuf.read(x, 10);
 #endif
     //this is for doing unit tests but I don't have time, sorry    
-    buffers::WrapBuffer<30, true> wrapBuf;
+    buffers::WrapBuffer<30, true> wrapBuf(mtx);
 
     assert(wrapBuf.unused() == 30);
     auto n = wrapBuf.write(myData, 10);//write 10  (0 to 9), free(19)

@@ -10,7 +10,7 @@
 namespace buffers {
     template <class T, size_t N=1000, bool DEBUG=false>
     struct RingBuffer {
-    private:
+    protected:
         size_t _begin_offset, _end_offset;//begin and end ingexes
         size_t _used;//used entries
         T _data[N];
@@ -22,9 +22,9 @@ namespace buffers {
                 memset (_data, 0x00, sizeof(T)*N);
         }
 
-        size_t used() const { return _used; }
-        size_t capacity() const { return N; }
-        size_t unused() const { return N - _used; }
+        size_t used () const { return _used; }
+        size_t size () const { return N; }
+        size_t unused () const { return N - _used; }
 
         //write min(n, _capacity-_used) items
         //return number of items written.
