@@ -27,13 +27,13 @@ void someTests(){
     assert(wrapBuf.unused() == 30);
     auto n = wrapBuf.write(myData, 10);//write 10  (0 to 9), free(19)
     assert(wrapBuf.unused() == 19);
-    assert(n, 10);
+    assert(n == 10);
     n = wrapBuf.write(&myData[10], 10);//write 10  (10 to 19), free(8)
     assert(wrapBuf.unused() == 8);
-    assert(n, 10);
+    assert(n == 10);
     n = wrapBuf.write(&myData[20], 5); //write 5   (20 to 24), free (2)
     assert(wrapBuf.unused() == 2);
-    assert(n, 5);
+    assert(n == 5);
     n = wrapBuf.write(&myData[25], 10);//write 0   free(2)
     assert(n == 0);
     assert(wrapBuf.unused() == 2);

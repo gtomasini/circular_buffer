@@ -11,7 +11,7 @@ int main() {
     someTests();
 
     iModule* m = new Module1();
-    Module1* m1 = static_cast<Module1*>(m1);
+    Module1* m1 = static_cast<Module1*>(m);
     m1->doJob();
 
     std::thread th(&Module1::doJob, m1);
