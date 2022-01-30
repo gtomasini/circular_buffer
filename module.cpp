@@ -10,7 +10,7 @@ const auto MaxBuffersSent =
 #ifdef DEBUG
 10;
 #else
-20;
+100;
 #endif
 
 //here we save the final arrays from thread 3 (key: usecs since epoch)
@@ -98,6 +98,7 @@ void Module2::doJob() const {
 
 //auxiliar
 const std::string getGMtime() {
+#if defined(__GNUC__)	
 	time_t t = time(NULL);
 	struct tm ptm;
 	char str[26];
@@ -105,8 +106,11 @@ const std::string getGMtime() {
 	snprintf(str, sizeof(str), "%2d-%02d-%02d %2d:%02d:%02d", 
 		ptm.tm_year - 100, ptm.tm_mon + 1, ptm.tm_mday,
 		ptm.tm_hour, ptm.tm_min, ptm.tm_sec);
-
 	return std::string(str);
+#else
+	//TODO: implement this
+	return "hora";
+#endif
 }
 
 //auxiliar
