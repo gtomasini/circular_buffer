@@ -6,10 +6,17 @@
 using namespace Modules;
 
 #undef DEBUG
-const auto MaxBuffersSent = 100;
+const auto MaxBuffersSent = 
+#ifdef DEBUG
+10;
+#else
+20;
+#endif
 
+//here we save the final arrays from thread 3 (key: usecs since epoch)
 static mapType finalTimeVecMap;
 
+//in order to export data to main
 const mapType *Modules::getfinalTimeVecMap() {
 	return &finalTimeVecMap;
 }
@@ -91,18 +98,29 @@ void Module2::doJob() const {
 
 //auxiliar
 const std::string getGMtime() {
+	time_t t = time(NULL);
+	struct tm ptm;
+	char str[26];
+	gmtime_r(&t, &ptm);
+	snprintf(str, sizeof(str), "%2d-%02d-%02d %2d:%02d:%02d", 
+		ptm.tm_year - 100, ptm.tm_mon + 1, ptm.tm_mday,
+		ptm.tm_hour, ptm.tm_min, ptm.tm_sec);
 
-	return "hora";
+	return std::string(str);
 }
 
 //auxiliar
-uint64_t get_msecsSinceEpoch() {
+inline uint64_t get_msecsSinceEpoch() {
 	using namespace std::chrono;
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
+inline uint64_t get_usecsSinceEpoch() {
+	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
 void printVec (const std::vector<uint8_t>& vec) {
-	std::cout << getGMtime() << std::endl;
+	std::cout << getGMtime() << ":";
 	for (const auto& x : vec) {
 		std::cout<<" "<<std::hex << (unsigned)x;
 	}
@@ -122,10 +140,13 @@ void Module3::doJob() const {
 #ifdef DEBUG
 		std::cout << "mod3, reads " << (unsigned)n << " bytes\n";
 #endif
-		const std::vector<uint8_t> finalArr (inBuff, inBuff + n);
-		//record array (key msecs from epoch)
-		finalTimeVecMap[get_msecsSinceEpoch()] = finalArr;
-		printVec(finalArr);
+		if (n > 0){
+			const std::vector<uint8_t> finalArr (inBuff, inBuff + n);
+			//record array vector in a map (key: usecs from epoch)
+			//Warning: if the computer is enough fast entry key could be override
+			finalTimeVecMap[get_usecsSinceEpoch()] = finalArr;
+			printVec (finalArr);
+		}
 		totalLen += n;
 	} while (n > 0);
 	std::cout << "mod3, total read bytes: " << totalLen << std::endl;

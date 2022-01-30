@@ -27,7 +27,7 @@ int main() {
     std::unique_ptr<iModule> im2 (new Module2());
     std::unique_ptr<iModule> im3 (new Module3());
 
-    const uint8_t match[] = {6,7,8};
+    const uint8_t match[] = {1, 2};
 
     static_cast<Module2*>(im2.get())->setMatch (match, 1);
 
