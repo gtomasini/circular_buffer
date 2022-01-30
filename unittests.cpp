@@ -2,28 +2,57 @@
 #include <cassert>
 #include <cstdint>
 #include <string.h>
+#include <iostream>
 
 static std::mutex  mtx;
 
+//this is for kind of doing unit tests but I don't have time, sorry    
 void someTests(){
+    std::cout << "some utests.." << std::endl;
     uint8_t myData[100], x[10];
     for (int i = 0; i < 100; i++)  myData[i] = i;
-    memset(x, 0, 10);
+    memset (x, 0, sizeof(x)/(sizeof(x[0])));
 
-#if 0
-    buffers::RingBuffer<uint8_t, 30>   ringbuf;
+    //just for debug
+    buffers::RingBuffer<uint8_t, 30> ringbuf;
+    assert(ringbuf.size() == 30);
+
     ringbuf.write(myData, 10);
+    assert(ringbuf.unused() == 20);
+    assert(ringbuf.used() == 10);
+
     ringbuf.write(&myData[10], 10);
+    assert(ringbuf.unused() == 10);
+    assert(ringbuf.used() == 20);
+
     ringbuf.write(&myData[20], 5);
+    assert(ringbuf.unused() == 5);
+    assert(ringbuf.used() == 25);
+
     ringbuf.write(&myData[25], 10);
+    assert(ringbuf.unused() == 0);
+    assert(ringbuf.used() == 30);
 
     ringbuf.read(x, 10);
+    assert(ringbuf.unused() == 10);
+    assert(ringbuf.used() == 20);
+
     ringbuf.write(&myData[25], 10);
+    assert(ringbuf.unused() == 0);
+    assert(ringbuf.used() == 30);
+
     ringbuf.read(x, 10);
+    assert(ringbuf.unused() == 10);
+    assert(ringbuf.used() == 20);
+
     ringbuf.read(x, 5);
+    assert(ringbuf.unused() == 15);
+    assert(ringbuf.used() == 15);
+
     ringbuf.read(x, 10);
-#endif
-    //this is for doing unit tests but I don't have time, sorry    
+    assert(ringbuf.unused() == 25);
+    assert(ringbuf.used() == 5);
+
     buffers::WrapBuffer<30, true> wrapBuf(mtx);
 
     assert(wrapBuf.unused() == 30);
@@ -60,4 +89,6 @@ void someTests(){
     assert(wrapBuf.unused() == 30);
     n = wrapBuf.read(x);                //read 0
     assert(n == 0);
+
+    std::cout << "end of uts" << std::endl;
 }
