@@ -155,6 +155,5 @@ void Module3::doJob() const {
 	} while (n > 0);
 	std::cout << "mod3, total read bytes: " << totalLen << std::endl;
 	
-	std::this_thread::sleep_for(std::chrono::seconds(1));
 	std::cout << __PRETTY_FUNCTION__ << " ends...\n";
 }

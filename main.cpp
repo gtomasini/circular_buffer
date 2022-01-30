@@ -27,9 +27,9 @@ int main() {
     std::unique_ptr<iModule> im2 (new Module2());
     std::unique_ptr<iModule> im3 (new Module3());
 
-    const uint8_t match[] = {1, 2};
+    const uint8_t match[] = {1, 2};//pattern to search
 
-    static_cast<Module2*>(im2.get())->setMatch (match, 1);
+    static_cast<Module2*>(im2.get())->setMatch (match, 2);
 
     im1.get()->setWrapBuf_1_to_2 (&wrapBuf_1_2);
     im2.get()->setWrapBuf_1_to_2 (&wrapBuf_1_2);
@@ -39,12 +39,14 @@ int main() {
     std::thread th1 (&iModule::doJob, im1.get());
     std::thread th2 (&iModule::doJob, im2.get());
     std::thread th3 (&iModule::doJob, im3.get());
+	
+	std::this_thread::sleep_for(std::chrono::seconds(100));
 
     th1.join();
     th2.join();
     th3.join();
 
-    //prints map again just for check
+    //prints map again just for check the record map
     auto finalTimeVecMap = getfinalTimeVecMap();
     for (auto const& x : *finalTimeVecMap){
         std::cout << x.first << ":";

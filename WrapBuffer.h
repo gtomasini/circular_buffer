@@ -34,12 +34,16 @@ namespace buffers {
         uint8_t write (const uint8_t* ptr, uint8_t len) {
             std::unique_lock<std::mutex> lk(*_mtx);
             while (len + sizeof(len) > _buffer.unused()) {
-                std::cout << std::this_thread::get_id();
-                std::cout << " write() buffer almost full ("<<_buffer.unused()<<")\n";
+				if (DEBUG){
+					std::cout << std::this_thread::get_id();
+					std::cout << " write() buffer almost full ("<<_buffer.unused()<<")\n";
+				}
                 if (_space_available.wait_for(lk, _timeout, 
                         [&] {return len + sizeof(len) <= _buffer.unused(); }) == false) {
-                    std::cout << std::this_thread::get_id();
-                    std::cout << " write() timeout!!\n";
+					if (DEBUG){		
+						std::cout << std::this_thread::get_id();
+						std::cout << " write() timeout!!\n";
+					}
                     return 0;
                 }
             }
@@ -57,12 +61,16 @@ namespace buffers {
         uint8_t read (uint8_t* ptr) {
             std::unique_lock<std::mutex> lk(*_mtx);
             while (_buffer.used() == 0) {
-                std::cout << std::this_thread::get_id();
-                std::cout << " read() buffer empty...\n";
+				if (DEBUG){
+					std::cout << std::this_thread::get_id();
+					std::cout << " read() buffer empty...\n";
+				}
                 if (_item_available.wait_for(lk, _timeout,
                         [&] {return _buffer.used() > 0; }) == false) {
-                    std::cout << std::this_thread::get_id();
-                    std::cout << " read() timeout!!\n";
+					if (DEBUG){
+						std::cout << std::this_thread::get_id();
+						std::cout << " read() timeout!!\n";
+					}
                     return 0;
                 }
             }
