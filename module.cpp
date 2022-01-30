@@ -5,7 +5,7 @@
 
 using namespace Modules;
 
-#define DEBUG
+#undef DEBUG
 const auto MaxBuffersSent = 100;
 
 static mapType finalTimeVecMap;
@@ -37,7 +37,10 @@ void Module1:: doJob() const {
 		const auto n = sizeof(outBuff)/sizeof(outBuff[0]);
 		std::cout << "mod1, writes " << (unsigned)n << " bytes\n";
 #endif
-		_wrapBuf_1_to_2_Ptr->write (outBuff, n);
+		uint8_t st(0);
+		do {
+			st = _wrapBuf_1_to_2_Ptr->write(outBuff, n);
+		} while (st == 0);
 		totalLen += n;
 	}
 	std::cout << "mod1, total writen bytes: " << totalLen << std::endl;
@@ -70,7 +73,11 @@ void Module2::doJob() const {
 #ifdef DEBUG
 			std::cout << "matchs pattern, resend to thr3!\n";
 #endif
-			_wrapBuf_2_to_3_Ptr->write(inBuff, n);
+			uint8_t st(0);
+			do {
+				st = _wrapBuf_2_to_3_Ptr->write(inBuff, n);
+			} while (st == 0);
+
 		}
 		else
 #ifdef DEBUG
@@ -83,20 +90,8 @@ void Module2::doJob() const {
 }
 
 //auxiliar
-std::string getGMtime() {
-	time_t rawtime;
-	time(&rawtime);
-	//TODO: chagne this for gmtime_r
-	//const auto* ptm = gmtime(&rawtime);
-	//char aux[80];
-	//snprintf(aux, sizeof(aux), "%2d-%02d-%02d %2d:%02d:%02d", 
-	//	ptm->tm_year - 100, ptm->tm_mon + 1, ptm->tm_mday,
-	//	ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
+const std::string getGMtime() {
 
-	//time_t t = time(NULL);
-	//struct tm buf;
-	//char str[26];
-	//gmtime_r(&t, &buf);
 	return "hora";
 }
 

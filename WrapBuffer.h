@@ -11,9 +11,10 @@
 //this uses RingBuffer with sincronization
 
 namespace buffers {
+    const std::chrono::seconds  _timeout = std::chrono::seconds(1);
+
     template <size_t N = 1000, bool DEBUG=false>
     struct WrapBuffer {
-        const std::chrono::seconds  _timeout = std::chrono::seconds(5);
     private:
         RingBuffer <uint8_t, N, DEBUG> _buffer;
         std::mutex *_mtx;
@@ -29,6 +30,7 @@ namespace buffers {
 
         //n: max to write 255 bytes
         //ptr: pointer to data
+        //if timeout return 0
         uint8_t write (const uint8_t* ptr, uint8_t len) {
             std::unique_lock<std::mutex> lk(*_mtx);
             while (len + sizeof(len) > _buffer.unused()) {
@@ -41,8 +43,6 @@ namespace buffers {
                     return 0;
                 }
             }
-            std::cout << std::this_thread::get_id();
-            std::cout << " write() gets lock...\n";
             auto len1=_buffer.write (&len, sizeof(len));
             auto len2=_buffer.write (ptr, len);
             assert(len1 + len2 == len+sizeof(len));
@@ -53,6 +53,7 @@ namespace buffers {
 
         //return read bytes 
         //ptr: pointer to buffer (warning with its size)
+        //if timeout return 0
         uint8_t read (uint8_t* ptr) {
             std::unique_lock<std::mutex> lk(*_mtx);
             while (_buffer.used() == 0) {
@@ -65,8 +66,6 @@ namespace buffers {
                     return 0;
                 }
             }
-            std::cout << std::this_thread::get_id();
-            std::cout << " read() gets lock...\n";
             uint8_t len;
             _buffer.read (&len, sizeof(len));
             auto n = _buffer.read (ptr, len);
