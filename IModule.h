@@ -10,13 +10,14 @@
 
 struct iModule {
 	virtual void doJob() = 0;
-	virtual void launchThr();
 	virtual void setWrapBuf(buffers::WrapBuffer<1000, true> *wrapBufPtr) {
 		_wrapBufPtr = wrapBufPtr;
 	}
 
 protected:
-	buffers::WrapBuffer<1000, true>* _wrapBufPtr;
+	buffers::WrapBuffer<1000, true>* _wrapBufPtr=nullptr;
+	const uint8_t ArrayLen = 100;
+	const uint8_t ArrayValMax = 0xff;
 };
 
 struct Module1 :iModule {
