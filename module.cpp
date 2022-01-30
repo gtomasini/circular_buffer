@@ -8,7 +8,7 @@ using namespace Modules;
 #undef DEBUG
 const auto MaxBuffersSent = 
 #ifdef DEBUG
-10;
+50;
 #else
 100;
 #endif
@@ -42,8 +42,8 @@ void Module1:: doJob() const {
 			outBuff[ii] = rand() % ArrayValMax;//0-254
 #else
 		const auto n = sizeof(outBuff)/sizeof(outBuff[0]);
-		std::cout << "mod1, writes " << (unsigned)n << " bytes\n";
 #endif
+		std::cout << "mod1, writes " << (unsigned)n << " bytes\n";
 		uint8_t st(0);
 		do {
 			st = _wrapBuf_1_to_2_Ptr->write(outBuff, n);
@@ -72,9 +72,7 @@ void Module2::doJob() const {
 	do {
 		memset (inBuff, 0x00, ArrayLenMax);//just for debug
 		n = _wrapBuf_1_to_2_Ptr->read (inBuff);
-#ifdef DEBUG
 		std::cout << "mod2, reads " << (unsigned)n << " bytes, ";
-#endif
 		auto st=processInBuf (inBuff, n);
 		if (st) {
 #ifdef DEBUG
@@ -141,9 +139,7 @@ void Module3::doJob() const {
 	do {
 		memset(inBuff, 0x00, ArrayLenMax);//just for debug
 		n = _wrapBuf_2_to_3_Ptr->read(inBuff);
-#ifdef DEBUG
 		std::cout << "mod3, reads " << (unsigned)n << " bytes\n";
-#endif
 		if (n > 0){
 			const std::vector<uint8_t> finalArr (inBuff, inBuff + n);
 			//record array vector in a map (key: usecs from epoch)

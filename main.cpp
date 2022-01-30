@@ -27,9 +27,9 @@ int main() {
     std::unique_ptr<iModule> im2 (new Module2());
     std::unique_ptr<iModule> im3 (new Module3());
 
-    const uint8_t match[] = {1, 2};//pattern to search
+    const uint8_t match[] = {6, 2};//pattern to search
 
-    static_cast<Module2*>(im2.get())->setMatch (match, 2);
+    static_cast<Module2*>(im2.get())->setMatch (match, 1);
 
     im1.get()->setWrapBuf_1_to_2 (&wrapBuf_1_2);
     im2.get()->setWrapBuf_1_to_2 (&wrapBuf_1_2);
