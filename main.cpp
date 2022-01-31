@@ -40,7 +40,7 @@ int main() {
     std::thread th2 (&iModule::doJob, im2.get());
     std::thread th3 (&iModule::doJob, im3.get());
 	
-	std::this_thread::sleep_for(std::chrono::seconds(100));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
     th1.join();
     th2.join();

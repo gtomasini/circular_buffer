@@ -6,7 +6,8 @@
 using namespace Modules;
 
 #undef DEBUG
-const auto MaxBuffersSent = 
+#undef DEBUG
+const auto MaxBuffers2Sent = 
 #ifdef DEBUG
 50;
 #else
@@ -34,21 +35,23 @@ void Module1:: doJob() const {
 #endif
 
 	unsigned totalLen = 0;
-	for (auto i=0; i< MaxBuffersSent; i++){
+	for (auto i=0; i< MaxBuffers2Sent; i++){
 #ifndef DEBUG
 		memset (outBuff, 0x00, ArrayLenMax);//just for debug
-		const auto n = rand() % ArrayLenMax;//array len 0-99
-		for (auto ii = 0; ii < n; ++ii)
-			outBuff[ii] = rand() % ArrayValMax;//0-254
+		const auto len = rand() % ArrayLenMax;//array len 0-99
+		if (len==0) continue;
+		//fill  the array with random values
+		for (auto offset = 0; offset< len; ++offset)
+			outBuff[offset] = rand() % ArrayValMax;//0-254
 #else
-		const auto n = sizeof(outBuff)/sizeof(outBuff[0]);
+		const auto len = sizeof(outBuff)/sizeof(outBuff[0]);
 #endif
-		std::cout << "mod1, writes " << (unsigned)n << " bytes\n";
+		std::cout << "mod1, writes " << (unsigned)len << " bytes\n";
 		uint8_t st(0);
 		do {
-			st = _wrapBuf_1_to_2_Ptr->write(outBuff, n);
+			st = _wrapBuf_1_to_2_Ptr->write(outBuff, len);
 		} while (st == 0);
-		totalLen += n;
+		totalLen += len;
 	}
 	std::cout << "mod1, total writen bytes: " << totalLen << std::endl;
 	std::cout << __PRETTY_FUNCTION__<<" ends...\n";
