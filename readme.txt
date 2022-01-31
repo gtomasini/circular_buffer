@@ -7,6 +7,10 @@ try it
 notice: (TODO)I would need to synchronize the stdout but I don't have more time.
 There are also debug messages to filter or condition. 
 
+notice2: this stuff compiles fine in linux (I tested with ubuntu 20.04) but also compiles with visual studio (windows, but in this case the gmt time is pending to imlement, because is not the same than gnu). The idea os c++ is that the same source could compiles in any platform with not changes or just puntual changes.
+
+TODO: DEBUG macro must be as an external flag, but I didn't finish that. 
+
 See statements in pdf. 
 
 We would like to implement the following three modules:
