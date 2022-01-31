@@ -6,10 +6,12 @@
 using namespace Modules;
 
 #undef DEBUG
-#undef DEBUG
+//#define DEBUG
+
 const auto MaxBuffers2Sent = 
 #ifdef DEBUG
-50;
+//just for debug
+20;
 #else
 100;
 #endif
@@ -30,6 +32,7 @@ void Module1:: doJob() const {
 #ifndef DEBUG
 	uint8_t outBuff[ArrayLenMax];
 #else
+	//just for debug
 	uint8_t outBuff[]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 						17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 #endif
@@ -44,17 +47,18 @@ void Module1:: doJob() const {
 		for (auto offset = 0; offset< len; ++offset)
 			outBuff[offset] = rand() % ArrayValMax;//0-254
 #else
+		//just for debug
 		const auto len = sizeof(outBuff)/sizeof(outBuff[0]);
 #endif
-		std::cout << "mod1, writes " << (unsigned)len << " bytes\n";
+		std::cout << "mod1, writes " << std::dec<<(unsigned)len << " bytes\n";
 		uint8_t st(0);
 		do {
 			st = _wrapBuf_1_to_2_Ptr->write(outBuff, len);
 		} while (st == 0);
 		totalLen += len;
 	}
-	std::cout << "mod1, total writen bytes: " << totalLen << std::endl;
-	std::cout << __PRETTY_FUNCTION__<<" ends...\n";
+	std::cout << "mod1, total writen bytes: " << std::dec<<totalLen << std::endl;
+	std::cout << "mod1, ends...\n";
 }
 
 bool Module2::processInBuf (const uint8_t* buf, uint8_t len) const {
@@ -75,7 +79,7 @@ void Module2::doJob() const {
 	do {
 		memset (inBuff, 0x00, ArrayLenMax);//just for debug
 		n = _wrapBuf_1_to_2_Ptr->read (inBuff);
-		std::cout << "mod2, reads " << (unsigned)n << " bytes, ";
+		std::cout << "mod2, reads " << std::dec<<(unsigned)n << " bytes, ";
 		auto st=processInBuf (inBuff, n);
 		if (st) {
 #ifdef DEBUG
@@ -93,8 +97,8 @@ void Module2::doJob() const {
 #endif
 		totalLen += n;
 	} while (n > 0);
-	std::cout << "mod2, total read bytes: " << totalLen << std::endl;
-	std::cout << __PRETTY_FUNCTION__ << " ends...\n";
+	std::cout << "mod2, total read bytes: " << std::dec<<totalLen << std::endl;
+	std::cout << "mod2, ends...\n";
 }
 
 //auxiliar
@@ -109,12 +113,12 @@ const std::string getGMtime() {
 		ptm.tm_hour, ptm.tm_min, ptm.tm_sec);
 	return std::string(str);
 #else
-	//TODO: implement this
+	//TODO: implement this (compilator is not gnu here)
 	return "hora";
 #endif
 }
 
-//auxiliar
+//auxiliar functions *****************************************
 inline uint64_t get_msecsSinceEpoch() {
 	using namespace std::chrono;
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
@@ -131,6 +135,7 @@ void printVec (const std::vector<uint8_t>& vec) {
 	}
 	std::cout << std::endl;
 }
+//end auxiliar
 
 void Module3::doJob() const {
 	std::cout << std::this_thread::get_id();
@@ -142,17 +147,19 @@ void Module3::doJob() const {
 	do {
 		memset(inBuff, 0x00, ArrayLenMax);//just for debug
 		n = _wrapBuf_2_to_3_Ptr->read(inBuff);
-		std::cout << "mod3, reads " << (unsigned)n << " bytes\n";
+		std::cout << "mod3, reads " << std::dec<<(unsigned)n << " bytes\n";
 		if (n > 0){
 			const std::vector<uint8_t> finalArr (inBuff, inBuff + n);
 			//record array vector in a map (key: usecs from epoch)
 			//Warning: if the computer is enough fast entry key could be override
-			finalTimeVecMap[get_usecsSinceEpoch()] = finalArr;
+			const auto usecsSinceEpoch = get_usecsSinceEpoch();
+			if (finalTimeVecMap.count(usecsSinceEpoch))
+				std::cerr<<"used entry map, ERROR!!!"<<std::endl;
+			finalTimeVecMap[usecsSinceEpoch] = finalArr;
 			printVec (finalArr);
 		}
 		totalLen += n;
 	} while (n > 0);
-	std::cout << "mod3, total read bytes: " << totalLen << std::endl;
-	
-	std::cout << __PRETTY_FUNCTION__ << " ends...\n";
+	std::cout << "mod3, total read bytes: " << std::dec<<totalLen << std::endl;
+	std::cout << "mod3, ends...\n";
 }

@@ -32,17 +32,18 @@ namespace buffers {
         //ptr: pointer to data
         //if timeout return 0
         uint8_t write (const uint8_t* ptr, uint8_t len) {
+			if (len==0 ||ptr==nullptr) return 0;
             std::unique_lock<std::mutex> lk(*_mtx);
             while (len + sizeof(len) > _buffer.unused()) {
 				if (DEBUG){
-					std::cout << std::this_thread::get_id();
-					std::cout << " write() buffer almost full ("<<_buffer.unused()<<")\n";
+					std::cerr << std::this_thread::get_id();
+					std::cerr << " write() buffer almost full ("<<_buffer.unused()<<")\n";
 				}
                 if (_space_available.wait_for(lk, _timeout, 
                         [&] {return len + sizeof(len) <= _buffer.unused(); }) == false) {
 					if (DEBUG){		
-						std::cout << std::this_thread::get_id();
-						std::cout << " write() timeout!!\n";
+						std::cerr << std::this_thread::get_id();
+						std::cerr << " write() timeout!!\n";
 					}
                     return 0;
                 }
@@ -59,17 +60,18 @@ namespace buffers {
         //ptr: pointer to buffer (warning with its size)
         //if timeout return 0
         uint8_t read (uint8_t* ptr) {
+			if (ptr==nullptr) return 0;
             std::unique_lock<std::mutex> lk(*_mtx);
             while (_buffer.used() == 0) {
 				if (DEBUG){
-					std::cout << std::this_thread::get_id();
-					std::cout << " read() buffer empty...\n";
+					std::cerr << std::this_thread::get_id();
+					std::cerr << " read() buffer empty...\n";
 				}
                 if (_item_available.wait_for(lk, _timeout,
                         [&] {return _buffer.used() > 0; }) == false) {
 					if (DEBUG){
-						std::cout << std::this_thread::get_id();
-						std::cout << " read() timeout!!\n";
+						std::cerr << std::this_thread::get_id();
+						std::cerr << " read() timeout!!\n";
 					}
                     return 0;
                 }

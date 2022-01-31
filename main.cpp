@@ -47,9 +47,10 @@ int main() {
     th3.join();
 
     //prints map again just for check the record map
+	std::cout<<"main(), final recorded map:"<<std::endl;
     auto finalTimeVecMap = getfinalTimeVecMap();
     for (auto const& x : *finalTimeVecMap){
-        std::cout << x.first << ":";
+        std::cout << std::dec<<x.first << ":";
         for (const auto& xv : x.second) {
             std::cout << " " << std::hex << (unsigned)xv;
         }
