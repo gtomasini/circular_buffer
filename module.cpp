@@ -1,14 +1,16 @@
 #include <iostream>
 #include <thread>
 #include <chrono>  
+#include <iterator>
+#include <cassert>
 #include "IModule.h"
 
 using namespace Modules;
 
-#undef DEBUG
-//#define DEBUG
+//#undef DEBUG
+#define DEBUG
 
-const auto MaxBuffers2Sent = 
+static const auto MaxBuffers2Sent = 
 #ifdef DEBUG
 //just for debug
 20;
@@ -27,7 +29,7 @@ const mapType *Modules::getfinalTimeVecMap() {
 void Module1:: doJob() const {
 	std::cout << std::this_thread::get_id();
 	std::cout << " "<<__PRETTY_FUNCTION__ << std::endl;
-	assert(_wrapBuf_1_to_2_Ptr != nullptr);
+	assert(_buf_1_to_2_ptr != nullptr);
 
 #ifndef DEBUG
 	uint8_t outBuff[ArrayLenMax];
@@ -40,10 +42,10 @@ void Module1:: doJob() const {
 	unsigned totalLen = 0;
 	for (auto i=0; i< MaxBuffers2Sent; i++){
 #ifndef DEBUG
-		memset (outBuff, 0x00, ArrayLenMax);//just for debug
+		memset (outBuff, 0x00, ArrayLenMax);
 		const auto len = rand() % ArrayLenMax;//array len 0-99
 		if (len==0) continue;
-		//fill  the array with random values
+		// fill  the array with random values
 		for (auto offset = 0; offset< len; ++offset)
 			outBuff[offset] = rand() % ArrayValMax;//0-254
 #else
@@ -53,7 +55,7 @@ void Module1:: doJob() const {
 		std::cout << "mod1, writes " << std::dec<<(unsigned)len << " bytes\n";
 		uint8_t st(0);
 		do {
-			st = _wrapBuf_1_to_2_Ptr->write(outBuff, len);
+			st = _buf_1_to_2_ptr->write(outBuff, len);
 		} while (st == 0);
 		totalLen += len;
 	}
@@ -71,23 +73,23 @@ bool Module2::processInBuf (const uint8_t* buf, uint8_t len) const {
 void Module2::doJob() const {
 	std::cout << std::this_thread::get_id();
 	std::cout << " "<<__PRETTY_FUNCTION__ << std::endl;
-	assert(_wrapBuf_1_to_2_Ptr != nullptr);
-	assert(_wrapBuf_2_to_3_Ptr != nullptr);
+	assert(_buf_1_to_2_ptr != nullptr);
+	assert(_buf_2_to_3_ptr != nullptr);
 	uint8_t inBuff[ArrayLenMax];
 	uint8_t n = 0;//len of read buffer
 	unsigned totalLen = 0;
 	do {
 		memset (inBuff, 0x00, ArrayLenMax);//just for debug
-		n = _wrapBuf_1_to_2_Ptr->read (inBuff);
+		n = _buf_1_to_2_ptr->read (inBuff, ArrayLenMax);
 		std::cout << "mod2, reads " << std::dec<<(unsigned)n << " bytes, ";
 		auto st=processInBuf (inBuff, n);
 		if (st) {
 #ifdef DEBUG
-			std::cout << "matchs pattern, resend to thr3!\n";
+			std::cout << " matchs pattern, resend to thr3!\n";
 #endif
 			uint8_t st(0);
 			do {
-				st = _wrapBuf_2_to_3_Ptr->write(inBuff, n);
+				st = _buf_2_to_3_ptr->write(inBuff, n);
 			} while (st == 0);
 
 		}
@@ -102,16 +104,16 @@ void Module2::doJob() const {
 }
 
 //auxiliar
-const std::string getGMtime() {
+static const std::string getGMtime() {
 #if defined(__GNUC__)	
 	time_t t = time(NULL);
 	struct tm ptm;
-	char str[26];
+	char str[100];
 	gmtime_r(&t, &ptm);
 	snprintf(str, sizeof(str), "%2d-%02d-%02d %2d:%02d:%02d", 
 		ptm.tm_year - 100, ptm.tm_mon + 1, ptm.tm_mday,
 		ptm.tm_hour, ptm.tm_min, ptm.tm_sec);
-	return std::string(str);
+	return str;
 #else
 	//TODO: implement this (compilator is not gnu here)
 	return "hora";
@@ -119,16 +121,24 @@ const std::string getGMtime() {
 }
 
 //auxiliar functions *****************************************
-inline uint64_t get_msecsSinceEpoch() {
+static inline uint64_t get_msecsSinceEpoch() {
 	using namespace std::chrono;
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
-inline uint64_t get_usecsSinceEpoch() {
+static inline uint64_t get_usecsSinceEpoch() {
 	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-void printVec (const std::vector<uint8_t>& vec) {
+template<typename T>  
+void print_container(std::ostream& os, const T& container, const std::string& delimiter)  {  
+    std::copy(std::begin(container),   
+              std::end(container),   
+              std::ostream_iterator<typename T::value_type>(os, delimiter.c_str())); 
+}  
+
+
+static void printVec (const std::vector<uint8_t>& vec) {
 	std::cout << getGMtime() << ":";
 	for (const auto& x : vec) {
 		std::cout<<" "<<std::hex << (unsigned)x;
@@ -138,15 +148,15 @@ void printVec (const std::vector<uint8_t>& vec) {
 //end auxiliar
 
 void Module3::doJob() const {
-	std::cout << std::this_thread::get_id();
-	std::cout << " "<<__PRETTY_FUNCTION__ << std::endl;
+	std::cout << std::this_thread::get_id()
+			<< " "<<__PRETTY_FUNCTION__ << std::endl;
 	uint8_t inBuff[ArrayLenMax];
-	assert (_wrapBuf_2_to_3_Ptr != nullptr);
+	assert (_buf_2_to_3_ptr != nullptr);
 	uint8_t n = 0;//len of read buffer
 	unsigned totalLen = 0;
 	do {
 		memset(inBuff, 0x00, ArrayLenMax);//just for debug
-		n = _wrapBuf_2_to_3_Ptr->read(inBuff);
+		n = _buf_2_to_3_ptr->read(inBuff, ArrayLenMax);
 		std::cout << "mod3, reads " << std::dec<<(unsigned)n << " bytes\n";
 		if (n > 0){
 			const std::vector<uint8_t> finalArr (inBuff, inBuff + n);

@@ -1,25 +1,21 @@
 #include <iostream>
 #include <memory>
+#include <cassert>
 
 #include "RingBuffer.h"
-#include "WrapBuffer.h"
 #include "IModule.h"
 
 using namespace Modules;
 
 extern void someTests();//kind of uts
 
-//I did static these stuff just for no use stack
-static std::mutex mtx_1_2;//for buffer thread 1 to 2 
-static std::mutex mtx_2_3;//for buffer thread 2 to 2 
-
-static buffers::WrapBuffer<BufferLen, true> wrapBuf_1_2 (mtx_1_2);
-static buffers::WrapBuffer<BufferLen, true> wrapBuf_2_3 (mtx_2_3);
-
+#define DEBUG
 
 int main() {
+    static buffers::RingBuffer<uint8_t, BufferLen, true> wrapBuf_1_2;
+    static buffers::RingBuffer<uint8_t, BufferLen, true> wrapBuf_2_3;
 #ifdef DEBUG
-    someTests();//kind of unit testing
+    //someTests();//kind of unit testing
 #endif
     srand (time(NULL));
 
@@ -27,7 +23,7 @@ int main() {
     std::unique_ptr<iModule> im2 (new Module2());
     std::unique_ptr<iModule> im3 (new Module3());
 
-    const uint8_t match[] = {6, 2};//pattern to search
+    const uint8_t match[] = {6, 2};// pattern to search
 
     static_cast<Module2*>(im2.get())->setMatch (match, 1);
 
