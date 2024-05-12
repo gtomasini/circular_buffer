@@ -2,6 +2,7 @@
 #include <thread>
 #include <cassert>
 #include "Module1.h"
+#include "Color.h"
 
 using namespace modules;
 
@@ -16,10 +17,10 @@ static const auto MaxBuffers2Sent =
 #endif
 
 void Module1::doMyJob() {
-    for(;!_running;)std::this_thread::sleep_for(std::chrono::seconds(10));
+    for(;!_running;)std::this_thread::sleep_for(std::chrono::seconds(1));
 
-	std::cout << std::this_thread::get_id()
-	        << "-"<<__PRETTY_FUNCTION__ << std::endl;
+	std::cout << Clr::cy << std::this_thread::get_id()
+	        << "-"<<__PRETTY_FUNCTION__ << Clr::def<<std::endl;
     for(;_running;){
     #ifndef DEBUG
         uint8_t outBuff[ArrayLenMax];
@@ -42,7 +43,7 @@ void Module1::doMyJob() {
             //just for debug
             const auto len = sizeof(outBuff)/sizeof(outBuff[0]);
     #endif
-            std::cout << "mod1, writes " << std::dec<<(unsigned)len << " bytes\n";
+            std::cout << Clr::cy<<"mod1, writes " << std::dec<<(unsigned)len << " bytes\n"<<Clr::def;
             uint8_t st(0);
             auto buf_1_to_2_ptr=_mod2.getBufferPtr();
             assert(buf_1_to_2_ptr);
@@ -51,7 +52,7 @@ void Module1::doMyJob() {
             } while (st == 0);
             totalLen += len;
         }
-        std::cout << "mod1, total written bytes: " << std::dec<<totalLen << std::endl;
+        std::cout << Clr::cy<<"mod1, total written bytes: " << std::dec<<totalLen << std::endl<<Clr::def;
     }
-	std::cout << "mod1, ends...\n";
+	std::cout << Clr::cy<<"mod1, ends...\n"<<Clr::def;
 }

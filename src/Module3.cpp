@@ -1,5 +1,6 @@
 #include <iterator>
 #include "Module3.h"
+#include "Color.h"
 
 using namespace modules;
 
@@ -47,19 +48,19 @@ void print_container(std::ostream& os, const T& container, const std::string& de
 
 template<typename T>
 static void print_list (const T& list) {
-	std::cout << getGMtime() << ":";
+	std::cout << Clr::gr<< getGMtime() << ":"<<Clr::def;
 	for (const auto& x : list) {
-		std::cout<<" "<<std::hex << (unsigned)x;
+		std::cout<<Clr::gr<<" "<<std::hex << (unsigned)x<<Clr::def;
 	}
-	std::cout << std::endl;
+	std::cout << std::endl<<Clr::def;
 }
 //end auxiliar
 
 void Module3::doMyJob() {
-    for(;!_running;)std::this_thread::sleep_for(std::chrono::seconds(10));
+    for(;!_running;)std::this_thread::sleep_for(std::chrono::seconds(1));
 
-	std::cout << std::this_thread::get_id()
-			<< " "<<__PRETTY_FUNCTION__ << std::endl;
+	std::cout << Clr::gr<<std::this_thread::get_id()
+			<< " "<<__PRETTY_FUNCTION__ << std::endl<<Clr::def;
     for(;_running;){
         uint8_t inBuff[ArrayLenMax];
 
@@ -68,7 +69,7 @@ void Module3::doMyJob() {
         do {
             memset(inBuff, 0x00, ArrayLenMax);//just for debug
             n = _buf.read(inBuff, ArrayLenMax);
-            std::cout << "mod3, reads " << std::dec<<(unsigned)n << " bytes\n";
+            std::cout << Clr::gr<<"mod3, reads " << std::dec<<(unsigned)n << " bytes\n"<<Clr::def;
             if (n > 0){
                 const std::vector<uint8_t> finalArr (inBuff, inBuff + n);
                 //record array vector in a map (key: usecs from epoch)
@@ -81,7 +82,7 @@ void Module3::doMyJob() {
             }
             totalLen += n;
         } while (n > 0);
-        std::cout << "mod3, total read bytes: " << std::dec<<totalLen << std::endl;
+        std::cout << Clr::gr<<"mod3, total read bytes: " << std::dec<<totalLen << std::endl<<Clr::def;
     }
-	std::cout << "mod3, ends...\n";
+	std::cout <<Clr::gr<<"mod3, ends...\n"<<Clr::def;
 }

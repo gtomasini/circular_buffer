@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include "Module2.h"
+#include "Color.h"
 
 using namespace modules;
 
@@ -8,7 +9,7 @@ void Module2::setMatch (const uint8_t* const matchPtr, uint8_t len) {
     if (len > ArrayLenMax)	len = ArrayLenMax;
     _matchPtr = matchPtr;
     _matchLen = len;
-    std::cout << "mod2, match[]: ";
+    std::cout << Clr::ma<<"mod2, match[]: "<<Clr::def;
     for (int i = 0; i < len; i++)
         std::cout << (int)_matchPtr[i] << ",";
     std::cout<<std::endl;
@@ -22,10 +23,11 @@ bool Module2::processInBuf (const uint8_t* buf, uint8_t len) const {
 }
 
 void Module2::doMyJob() {
-    for(;!_running;)std::this_thread::sleep_for(std::chrono::seconds(10));
+    for(;!_running;)std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    std::cout << std::this_thread::get_id()
-	        << "-"<<__PRETTY_FUNCTION__ << std::endl;
+    std::cout << Clr::ma<<std::this_thread::get_id()
+	        << "-"<<__PRETTY_FUNCTION__ << std::endl<<Clr::def;
+
     for(;_running;){
         uint8_t inBuff[ArrayLenMax];
         uint8_t n = 0;//len of read buffer
@@ -35,7 +37,7 @@ void Module2::doMyJob() {
         do {
             memset (inBuff, 0x00, ArrayLenMax);//just for debug
             n = _buf.read (inBuff, ArrayLenMax);
-            std::cout << "mod2, reads " << std::dec<<(unsigned)n << " bytes, ";
+            std::cout << Clr::ma<<"mod2, reads " << std::dec<<(unsigned)n << " bytes, "<<Clr::def;
             const auto st=processInBuf (inBuff, n);
             if (st) {
     #ifdef DEBUG
@@ -53,7 +55,7 @@ void Module2::doMyJob() {
     #endif
             totalLen += n;
         } while (n > 0);
-        std::cout << "mod2, total read bytes: " << std::dec<<totalLen << std::endl;
+        std::cout << Clr::ma<<"mod2, total read bytes: " << std::dec<<totalLen << std::endl<<Clr::def;
     }
-	std::cout << "mod2, ends...\n";
+	std::cout << Clr::ma<<"mod2, ends...\n"<<Clr::def;
 }
